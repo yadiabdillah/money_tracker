@@ -1,8 +1,9 @@
 # Money Tracker System - Project Documentation
+## Laravel + Bootstrap | Local-First Development
 
 ## 📋 Overview
 
-This repository contains the complete Product Requirements Document (PRD) and technical architecture for a family-oriented money tracking system with Telegram bot integration.
+This repository contains the complete Product Requirements Document (PRD) and technical architecture for a family-oriented money tracking system with Telegram bot integration. **Updated for local-first development using Laravel and Bootstrap.**
 
 ## 📁 Documentation Files
 
@@ -70,48 +71,98 @@ Contains 12 Mermaid diagrams:
 └─────────────────┘
 ```
 
-### Technology Stack Recommendations
-- **Bot**: Node.js with Telegraf.js or node-telegram-bot-api
-- **Backend**: Express.js (Node.js) or FastAPI (Python)
-- **Database**: MySQL 8.0+ with Sequelize ORM
-- **Frontend**: React.js or Vue.js with Chart.js
-- **Hosting**: Cloud provider (AWS, Google Cloud, DigitalOcean)
+### Technology Stack (Local-First)
+- **Framework**: Laravel 10.x/11.x (PHP 8.1+)
+- **Frontend**: Blade Templates + Bootstrap 5
+- **Bot Integration**: telegram-bot-sdk (PHP)
+- **Database**: MySQL 8.0+ with Eloquent ORM
+- **Charts**: Chart.js
+- **Local Server**: Laragon, XAMPP, or Laravel Artisan serve
 
-## 🚀 Implementation Phases
+## 🚀 Quick Start
 
-### Phase 1: Foundation (Weeks 1-2)
-- Database schema setup
-- Basic API structure
-- Telegram bot framework
-- Authentication system
+### Prerequisites
+- PHP 8.1+
+- Composer
+- MySQL 8.0+
+- Node.js & NPM
 
-### Phase 2: Core Features (Weeks 3-4)
-- Transaction CRUD operations
-- Bot commands implementation
-- Family & user management
-- Category system
+### Installation
+```bash
+# Clone repository
+git clone <repository-url>
+cd money-tracker
 
-### Phase 3: Web Dashboard (Weeks 5-6)
-- Frontend framework setup
-- Dashboard pages
-- Filtering & search
-- Responsive design
+# Install dependencies
+composer install
+npm install
 
-### Phase 4: Analytics (Week 7)
-- Monthly summaries
-- Charts & visualizations
-- Reports & exports
+# Configure environment
+cp .env.example .env
+php artisan key:generate
 
-### Phase 5: Testing (Week 8)
-- Comprehensive testing
-- Performance optimization
-- Security audit
-- Bug fixes
+# Setup database
+php artisan migrate
+php artisan db:seed --class=CategorySeeder
 
-### Phase 6: Deployment (Week 9)
-- Production environment setup
-- Service deployment
-- Monitoring configuration
+# Run application
+php artisan serve
+npm run dev
+```
+
+**📖 For detailed setup instructions, see [LARAVEL_SETUP_GUIDE.md](LARAVEL_SETUP_GUIDE.md)**
+
+## 🚀 Implementation Phases (Local-First)
+
+### Phase 1: Local Environment Setup (Week 1)
+- Install PHP, Composer, MySQL
+- Create Laravel project
+- Configure local development server
+
+### Phase 2: Database & Models (Week 2)
+- Create migrations and models
+- Set up Eloquent relationships
+- Seed default categories
+
+### Phase 3: Telegram Bot Integration (Week 3)
+- Install telegram-bot-sdk
+- Create webhook/polling handler
+- Implement bot commands
+
+### Phase 4: Web Authentication & Layout (Week 4)
+- Set up Laravel Breeze
+- Create Bootstrap layout
+- Implement family-based auth
+
+### Phase 5: Core Web Features (Week 5)
+- Build dashboard with Blade
+- Create transaction management
+- Add filtering and search
+
+### Phase 6: Analytics & Visualizations (Week 6)
+- Implement monthly summaries
+- Integrate Chart.js
+- Build reports page
+
+### Phase 7: Testing & Refinement (Week 7)
+- Write PHPUnit tests
+- Test bot commands
+- Fix bugs and optimize
+
+### Phase 8: Documentation & Polish (Week 8)
+- Complete documentation
+- Optimize performance
+- Final testing
+
+### Phase 9: Local Deployment (Week 9)
+- Set up production-like environment
+- Beta test with family
+- Configure backups
+
+### Phase 10: Optional Cloud Migration (Week 10+)
+- Choose hosting provider
+- Deploy to production
+- Set up monitoring
 
 ## 📊 Database Schema
 

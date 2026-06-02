@@ -1,17 +1,17 @@
 # Product Requirements Document (PRD)
 # Money Tracker System with Telegram Bot Integration
 
-**Version:** 1.0  
-**Date:** June 2, 2026  
-**Author:** Product Planning Team  
-**Status:** Draft for Review
+**Version:** 2.0
+**Date:** June 2, 2026
+**Author:** Product Planning Team
+**Status:** Updated for Local-First Development
 
 ---
 
 ## 1. Executive Summary
 
 ### 1.1 Product Overview
-A family-oriented money tracking system that enables multiple users to log income and expenses through a Telegram bot interface, with data stored in MySQL and visualized through a web dashboard. The system provides real-time transaction tracking and monthly financial summaries for shared household budgets.
+A family-oriented money tracking system that enables multiple users to log income and expenses through a Telegram bot interface, with data stored in MySQL and visualized through a web dashboard. The system is designed for **local-first development** using Laravel and Bootstrap, making it easy to develop, test, and deploy on local machines before considering cloud deployment. The system provides real-time transaction tracking and monthly financial summaries for shared household budgets.
 
 ### 1.2 Target Users
 - Families managing shared household finances
@@ -24,6 +24,8 @@ A family-oriented money tracking system that enables multiple users to log incom
 - **Shared Visibility**: All family members see the same financial data
 - **Simplicity**: Basic categorization without overwhelming complexity
 - **Accessibility**: No app installation required, works on any device with Telegram
+- **Local-First**: Easy to set up and run on local machines with minimal dependencies
+- **Laravel Ecosystem**: Leverage Laravel's robust features and extensive documentation
 
 ---
 
@@ -274,88 +276,121 @@ A family-oriented money tracking system that enables multiple users to log incom
 ### 6.1 System Components
 
 ```
-┌─────────────────┐
-│  Telegram Bot   │
-│   (Node.js)     │
-└────────┬────────┘
-         │
-         │ HTTP/Webhook
-         │
-┌────────▼────────┐
-│   Backend API   │
-│   (Node.js/     │
-│    Express)     │
-└────────┬────────┘
-         │
-         │ SQL Queries
-         │
-┌────────▼────────┐
-│  MySQL Database │
-│                 │
-└─────────────────┘
-         ▲
-         │
-         │ SQL Queries
-         │
-┌────────┴────────┐
-│  Web Frontend   │
-│  (React/Vue)    │
-└─────────────────┘
+┌─────────────────────────────────────────┐
+│         Telegram Bot (PHP)              │
+│    (Webhook or Long Polling)            │
+└────────────────┬────────────────────────┘
+                 │
+                 │ HTTP Requests
+                 │
+┌────────────────▼────────────────────────┐
+│                                          │
+│      Laravel Application (PHP)          │
+│                                          │
+│  ┌──────────────────────────────────┐  │
+│  │   Web Routes (Blade Views)       │  │
+│  │   - Dashboard                     │  │
+│  │   - Transactions                  │  │
+│  │   - Reports                       │  │
+│  └──────────────────────────────────┘  │
+│                                          │
+│  ┌──────────────────────────────────┐  │
+│  │   API Routes (JSON)              │  │
+│  │   - Bot Webhook Endpoint         │  │
+│  │   - Transaction API              │  │
+│  └──────────────────────────────────┘  │
+│                                          │
+│  ┌──────────────────────────────────┐  │
+│  │   Controllers & Services         │  │
+│  └──────────────────────────────────┘  │
+│                                          │
+│  ┌──────────────────────────────────┐  │
+│  │   Eloquent ORM Models            │  │
+│  └──────────────────────────────────┘  │
+│                                          │
+└────────────────┬────────────────────────┘
+                 │
+                 │ Eloquent ORM
+                 │
+┌────────────────▼────────────────────────┐
+│         MySQL Database                  │
+│      (Local Development)                │
+└─────────────────────────────────────────┘
 ```
 
-### 6.2 Technology Stack Recommendations
+### 6.2 Technology Stack (Local-First Development)
 
-#### 6.2.1 Telegram Bot
-- **Framework**: node-telegram-bot-api or Telegraf.js
-- **Language**: Node.js (JavaScript/TypeScript)
-- **Hosting**: Cloud service (AWS Lambda, Google Cloud Functions, or VPS)
+#### 6.2.1 Core Framework
+- **Framework**: Laravel 10.x or 11.x
+- **Language**: PHP 8.1+
+- **Development Server**: Laravel Artisan serve or Laravel Valet
+- **Package Manager**: Composer
 
-#### 6.2.2 Backend API
-- **Framework**: Express.js (Node.js) or FastAPI (Python)
-- **Language**: Node.js/TypeScript or Python
-- **Authentication**: JWT tokens for web, Telegram ID for bot
-- **API Style**: RESTful API
+#### 6.2.2 Telegram Bot Integration
+- **Library**: telegram-bot-sdk/telegram-bot-sdk or irazasyed/telegram-bot-sdk
+- **Integration**: Laravel service provider
+- **Webhook**: Laravel route handling bot updates
+- **Alternative**: Long polling for local development
 
 #### 6.2.3 Database
-- **RDBMS**: MySQL 8.0+
-- **ORM**: Sequelize (Node.js) or SQLAlchemy (Python)
-- **Connection Pooling**: Enabled for performance
-- **Migrations**: Version-controlled schema migrations
+- **RDBMS**: MySQL 8.0+ or MariaDB 10.x
+- **ORM**: Laravel Eloquent ORM
+- **Migrations**: Laravel migration system
+- **Seeding**: Laravel database seeders
+- **Local Tools**: XAMPP, WAMP, Laragon, or Docker
 
-#### 6.2.4 Web Frontend
-- **Framework**: React.js or Vue.js
-- **UI Library**: Material-UI, Ant Design, or Tailwind CSS
-- **State Management**: Redux or Vuex
-- **Charts**: Chart.js or Recharts
-- **Build Tool**: Vite or Webpack
+#### 6.2.4 Frontend (Integrated with Laravel)
+- **Template Engine**: Blade (Laravel's native templating)
+- **CSS Framework**: Bootstrap 5.x
+- **JavaScript**: Vanilla JS or Alpine.js (lightweight)
+- **Charts**: Chart.js or ApexCharts
+- **Icons**: Bootstrap Icons or Font Awesome
+- **Build Tool**: Laravel Mix or Vite (included with Laravel)
 
-#### 6.2.5 Infrastructure
-- **Hosting**: Cloud provider (AWS, Google Cloud, DigitalOcean)
-- **Web Server**: Nginx as reverse proxy
-- **SSL/TLS**: Let's Encrypt certificates
-- **Monitoring**: PM2, New Relic, or Datadog
+#### 6.2.5 Development Environment
+- **Local Server Options**:
+  - Laravel Artisan serve (built-in)
+  - Laravel Valet (macOS)
+  - Laragon (Windows)
+  - XAMPP/WAMP (Windows)
+  - Docker with Laravel Sail
+- **Database Management**: phpMyAdmin, MySQL Workbench, or TablePlus
+- **Code Editor**: VS Code with Laravel extensions
+- **Version Control**: Git
+
+#### 6.2.6 Additional Laravel Features
+- **Authentication**: Laravel Breeze or custom auth
+- **Validation**: Laravel Form Requests
+- **Queue System**: Laravel Queue (for async bot responses)
+- **Caching**: File-based cache (local) or Redis (optional)
+- **Session**: File-based or database sessions
+- **Logging**: Laravel Log (file-based)
 
 ### 6.3 Data Flow
 
-#### 6.3.1 Transaction Creation Flow
+#### 6.3.1 Transaction Creation Flow (Laravel)
 1. User sends command to Telegram bot
-2. Bot validates command format and parameters
-3. Bot sends HTTP request to backend API
-4. API validates user authorization (family membership)
-5. API validates category exists
-6. API inserts transaction into MySQL database
-7. API returns success response to bot
-8. Bot sends confirmation message to user
-9. Web dashboard auto-refreshes (if open) via polling or WebSocket
+2. Bot webhook sends POST request to Laravel route (`/api/telegram/webhook`)
+3. Laravel TelegramController receives and validates webhook
+4. Controller parses command and validates format
+5. Controller validates user authorization via Telegram ID
+6. Controller validates category exists using Eloquent
+7. Controller creates transaction using Eloquent ORM
+8. Transaction saved to MySQL database
+9. Controller sends success response back to Telegram API
+10. Telegram bot sends confirmation message to user
+11. Web dashboard shows updated data on next page load
 
-#### 6.3.2 Dashboard Data Retrieval Flow
-1. User opens web dashboard
-2. Frontend authenticates user session
-3. Frontend requests data from backend API
-4. API queries MySQL for transactions and summaries
-5. API aggregates data (totals, categories, trends)
-6. API returns JSON response to frontend
-7. Frontend renders charts and tables
+#### 6.3.2 Dashboard Data Retrieval Flow (Laravel + Blade)
+1. User opens web dashboard URL
+2. Laravel route loads DashboardController
+3. Controller checks session authentication
+4. Controller queries transactions using Eloquent ORM
+5. Controller calculates summaries (totals, categories, trends)
+6. Controller passes data to Blade view
+7. Blade renders HTML with Bootstrap components
+8. Chart.js renders visualizations in browser
+9. Page displays complete dashboard
 
 ---
 
@@ -682,56 +717,86 @@ Bot: 📊 June 2026 Summary
 
 ---
 
-## 11. Implementation Roadmap
+## 11. Implementation Roadmap (Local-First Development)
 
-### Phase 1: Foundation (Weeks 1-2)
-- [ ] Set up development environment
-- [ ] Create MySQL database schema
-- [ ] Implement basic backend API structure
-- [ ] Set up Telegram bot framework
-- [ ] Create basic authentication system
+### Phase 1: Local Environment Setup (Week 1)
+- [ ] Install PHP 8.1+, Composer, MySQL
+- [ ] Install Laravel via Composer
+- [ ] Set up local development server (Laragon/XAMPP/Artisan serve)
+- [ ] Configure .env file for local database
+- [ ] Install Laravel Telescope for debugging (optional)
+- [ ] Set up Git repository
 
-### Phase 2: Core Features (Weeks 3-4)
-- [ ] Implement transaction CRUD operations
-- [ ] Build Telegram bot commands (expense, income, balance)
-- [ ] Create family and user management
-- [ ] Implement category system
-- [ ] Build basic API endpoints
+### Phase 2: Database & Models (Week 2)
+- [ ] Create Laravel migrations for all tables (families, users, categories, transactions)
+- [ ] Create Eloquent models with relationships
+- [ ] Create database seeders for default categories
+- [ ] Run migrations and seed database
+- [ ] Test model relationships in Tinker
 
-### Phase 3: Web Dashboard (Weeks 5-6)
-- [ ] Set up frontend framework
-- [ ] Create dashboard overview page
-- [ ] Build transactions list page
-- [ ] Implement filtering and search
-- [ ] Add responsive design
+### Phase 3: Telegram Bot Integration (Week 3)
+- [ ] Install telegram-bot-sdk package via Composer
+- [ ] Configure Telegram bot token in .env
+- [ ] Create TelegramController for webhook handling
+- [ ] Implement command parser (expense, income, balance, summary)
+- [ ] Test bot locally using ngrok or similar tunnel
+- [ ] Implement bot response formatting
 
-### Phase 4: Analytics & Reports (Week 7)
-- [ ] Implement monthly summary calculations
-- [ ] Create charts and visualizations
-- [ ] Build reports page
-- [ ] Add export functionality
+### Phase 4: Web Authentication & Layout (Week 4)
+- [ ] Install Laravel Breeze or create custom auth
+- [ ] Create base Blade layout with Bootstrap 5
+- [ ] Implement family-based authentication
+- [ ] Create navigation menu
+- [ ] Add responsive design with Bootstrap
+- [ ] Test authentication flow
 
-### Phase 5: Polish & Testing (Week 8)
-- [ ] Comprehensive testing (unit, integration, E2E)
-- [ ] Performance optimization
-- [ ] Security audit
-- [ ] Bug fixes and refinements
-- [ ] Documentation completion
+### Phase 5: Core Web Features (Week 5)
+- [ ] Create Dashboard controller and view
+- [ ] Build transaction list page with Blade components
+- [ ] Implement transaction filtering and search
+- [ ] Create transaction create/edit forms
+- [ ] Add pagination using Laravel paginator
+- [ ] Implement category management
 
-### Phase 6: Deployment (Week 9)
-- [ ] Set up production environment
-- [ ] Deploy database
-- [ ] Deploy backend API
-- [ ] Deploy Telegram bot
-- [ ] Deploy web frontend
-- [ ] Configure monitoring and logging
+### Phase 6: Analytics & Visualizations (Week 6)
+- [ ] Implement monthly summary calculations in controller
+- [ ] Integrate Chart.js for visualizations
+- [ ] Create reports page with date range filters
+- [ ] Build category breakdown charts
+- [ ] Add income vs expense comparisons
+- [ ] Implement data export (CSV/PDF)
 
-### Phase 7: Launch & Iteration (Week 10+)
-- [ ] Beta testing with initial users
-- [ ] Gather feedback
-- [ ] Implement improvements
-- [ ] Official launch
-- [ ] Ongoing maintenance and feature additions
+### Phase 7: Testing & Refinement (Week 7)
+- [ ] Write PHPUnit tests for models and controllers
+- [ ] Test all Telegram bot commands
+- [ ] Test web dashboard on different devices
+- [ ] Fix bugs and improve UX
+- [ ] Add form validation and error handling
+- [ ] Optimize database queries
+
+### Phase 8: Documentation & Polish (Week 8)
+- [ ] Write installation guide (README.md)
+- [ ] Document bot commands
+- [ ] Create user manual
+- [ ] Add code comments
+- [ ] Optimize performance
+- [ ] Final testing
+
+### Phase 9: Local Deployment & Testing (Week 9)
+- [ ] Set up local production-like environment
+- [ ] Test with real family data
+- [ ] Configure backup strategy
+- [ ] Set up logging and monitoring
+- [ ] Create deployment checklist
+- [ ] Beta test with family members
+
+### Phase 10: Optional Cloud Migration (Week 10+)
+- [ ] Choose hosting provider (if needed)
+- [ ] Set up production server
+- [ ] Configure domain and SSL
+- [ ] Deploy Laravel application
+- [ ] Set up Telegram webhook
+- [ ] Monitor and maintain
 
 ---
 

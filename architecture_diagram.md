@@ -1,6 +1,7 @@
 # Money Tracker System - Architecture Diagrams
+## Laravel + Bootstrap Local-First Development
 
-## 1. High-Level System Architecture
+## 1. High-Level System Architecture (Laravel Monolith)
 
 ```mermaid
 graph TB
@@ -14,99 +15,104 @@ graph TB
         TB[Telegram Bot API]
     end
     
-    subgraph Application Layer
-        BOT[Telegram Bot Service<br/>Node.js]
-        API[Backend API<br/>Express.js]
-        WEB[Web Frontend<br/>React/Vue]
+    subgraph Laravel Application
+        ROUTES[Routes<br/>web.php & api.php]
+        CTRL[Controllers<br/>Dashboard, Transaction, Telegram]
+        MODELS[Eloquent Models<br/>Family, User, Transaction]
+        VIEWS[Blade Views<br/>Bootstrap 5 UI]
     end
     
-    subgraph Data Layer
-        DB[(MySQL Database)]
-        CACHE[Redis Cache<br/>Optional]
-    end
-    
-    subgraph Infrastructure
-        NGINX[Nginx Reverse Proxy]
-        SSL[SSL/TLS Certificate]
+    subgraph Local Development
+        SERVER[PHP Built-in Server<br/>or Laragon/XAMPP]
+        DB[(MySQL Database<br/>Local)]
     end
     
     U1 -->|Messages| TB
     U2 -->|Messages| TB
     U3 -->|Messages| TB
-    TB -->|Webhook| BOT
+    TB -->|Webhook/Polling| ROUTES
     
-    U1 -->|HTTPS| NGINX
-    U2 -->|HTTPS| NGINX
-    U3 -->|HTTPS| NGINX
+    U1 -->|HTTP| SERVER
+    U2 -->|HTTP| SERVER
+    U3 -->|HTTP| SERVER
     
-    NGINX -->|Route| WEB
-    NGINX -->|Route| API
+    SERVER -->|Request| ROUTES
+    ROUTES -->|Web Routes| CTRL
+    ROUTES -->|API Routes| CTRL
     
-    BOT -->|REST API| API
-    WEB -->|REST API| API
+    CTRL -->|Query| MODELS
+    CTRL -->|Render| VIEWS
     
-    API -->|SQL Queries| DB
-    API -.->|Cache| CACHE
+    MODELS -->|Eloquent ORM| DB
     
-    SSL -.->|Secure| NGINX
+    VIEWS -->|HTML+Bootstrap| SERVER
 ```
 
-## 2. Data Flow - Transaction Creation via Telegram
+## 2. Data Flow - Transaction Creation via Telegram (Laravel)
 
 ```mermaid
 sequenceDiagram
     participant User
     participant Telegram
-    participant Bot
-    participant API
+    participant Laravel
+    participant Controller
+    participant Model
     participant DB
     
     User->>Telegram: /expense 50000 Food Lunch
-    Telegram->>Bot: Webhook notification
-    Bot->>Bot: Parse command
-    Bot->>Bot: Validate format
+    Telegram->>Laravel: POST /api/telegram/webhook
+    Laravel->>Controller: TelegramController@handleWebhook
+    Controller->>Controller: Parse command
+    Controller->>Controller: Validate format
     
     alt Valid command
-        Bot->>API: POST /api/transactions
-        API->>API: Authenticate user
-        API->>API: Validate category
-        API->>DB: INSERT transaction
-        DB-->>API: Success
-        API-->>Bot: Transaction created
-        Bot->>Telegram: Success message
+        Controller->>Model: User::findByTelegramId
+        Model->>DB: SELECT user
+        DB-->>Model: User data
+        Model-->>Controller: User object
+        Controller->>Model: Transaction::create
+        Model->>DB: INSERT transaction
+        DB-->>Model: Success
+        Model-->>Controller: Transaction object
+        Controller->>Telegram: sendMessage API
         Telegram->>User: ✅ Expense logged: Rp 50,000
     else Invalid command
-        Bot->>Telegram: Error message
+        Controller->>Telegram: sendMessage API
         Telegram->>User: ❌ Invalid format
     end
 ```
 
-## 3. Data Flow - Web Dashboard Access
+## 3. Data Flow - Web Dashboard Access (Laravel + Blade)
 
 ```mermaid
 sequenceDiagram
     participant User
     participant Browser
-    participant Frontend
-    participant API
+    participant Laravel
+    participant Controller
+    participant Model
     participant DB
+    participant Blade
     
-    User->>Browser: Open dashboard
-    Browser->>Frontend: Load application
-    Frontend->>Frontend: Check auth token
+    User->>Browser: GET /dashboard
+    Browser->>Laravel: HTTP Request
+    Laravel->>Laravel: Check session auth
     
     alt Authenticated
-        Frontend->>API: GET /api/summary/monthly
-        API->>API: Verify JWT token
-        API->>DB: Query transactions
-        DB-->>API: Transaction data
-        API->>API: Calculate summaries
-        API-->>Frontend: JSON response
-        Frontend->>Frontend: Render charts
-        Frontend->>Browser: Display dashboard
-        Browser->>User: Show data
+        Laravel->>Controller: DashboardController@index
+        Controller->>Model: Transaction::with relations
+        Model->>DB: SELECT with joins
+        DB-->>Model: Transaction data
+        Model-->>Controller: Collection
+        Controller->>Controller: Calculate summaries
+        Controller->>Blade: Pass data to view
+        Blade->>Blade: Render HTML + Bootstrap
+        Blade-->>Laravel: Compiled HTML
+        Laravel-->>Browser: HTML Response
+        Browser->>Browser: Render page + Chart.js
+        Browser->>User: Display dashboard
     else Not authenticated
-        Frontend->>Browser: Redirect to login
+        Laravel->>Browser: Redirect to /login
         Browser->>User: Show login page
     end
 ```
@@ -164,90 +170,114 @@ erDiagram
     }
 ```
 
-## 5. Component Architecture
-
-```mermaid
-graph LR
-    subgraph Telegram Bot Service
-        BH[Bot Handler]
-        CP[Command Parser]
-        VM[Validation Module]
-        AC[API Client]
-    end
-    
-    subgraph Backend API
-        RT[Router]
-        MW[Middleware]
-        CT[Controllers]
-        SV[Services]
-        RP[Repositories]
-    end
-    
-    subgraph Web Frontend
-        CP2[Components]
-        ST[State Management]
-        API2[API Client]
-        RT2[Router]
-    end
-    
-    BH --> CP
-    CP --> VM
-    VM --> AC
-    AC --> RT
-    
-    RT --> MW
-    MW --> CT
-    CT --> SV
-    SV --> RP
-    
-    API2 --> RT
-    CP2 --> ST
-    ST --> API2
-    RT2 --> CP2
-```
-
-## 6. Deployment Architecture
+## 5. Laravel Application Structure
 
 ```mermaid
 graph TB
-    subgraph Cloud Provider
-        subgraph Load Balancer
-            LB[Load Balancer]
+    subgraph Routes
+        WEB[web.php<br/>Web Routes]
+        API[api.php<br/>API Routes]
+    end
+    
+    subgraph Middleware
+        AUTH[Authenticate]
+        CSRF[VerifyCsrfToken]
+        FAMILY[CheckFamilyAccess]
+    end
+    
+    subgraph Controllers
+        DASH[DashboardController]
+        TRANS[TransactionController]
+        TELE[TelegramController]
+        CAT[CategoryController]
+    end
+    
+    subgraph Models
+        FAM[Family Model]
+        USER[User Model]
+        TRAN[Transaction Model]
+        CATE[Category Model]
+    end
+    
+    subgraph Views
+        LAYOUT[layouts/app.blade.php]
+        DASHV[dashboard.blade.php]
+        TRANSV[transactions/index.blade.php]
+        REPV[reports.blade.php]
+    end
+    
+    subgraph Database
+        DB[(MySQL)]
+    end
+    
+    WEB --> MIDDLEWARE
+    API --> MIDDLEWARE
+    MIDDLEWARE --> Controllers
+    
+    DASH --> Models
+    TRANS --> Models
+    TELE --> Models
+    CAT --> Models
+    
+    Models --> DB
+    
+    DASH --> Views
+    TRANS --> Views
+    
+    Views --> LAYOUT
+```
+
+## 6. Local Development Environment
+
+```mermaid
+graph TB
+    subgraph Development Machine
+        subgraph Laravel Application
+            APP[Laravel App<br/>Port 8000]
+            ENV[.env Config]
+            ARTISAN[Artisan CLI]
         end
         
-        subgraph Application Servers
-            APP1[App Server 1<br/>Bot + API]
-            APP2[App Server 2<br/>Bot + API]
+        subgraph Local Server Options
+            BUILT[PHP Built-in Server<br/>php artisan serve]
+            LARA[Laragon<br/>Windows]
+            XAMPP[XAMPP<br/>Cross-platform]
+            VALET[Laravel Valet<br/>macOS]
         end
         
-        subgraph Web Servers
-            WEB1[Web Server 1<br/>Static Files]
-            WEB2[Web Server 2<br/>Static Files]
+        subgraph Database
+            MYSQL[(MySQL 8.0<br/>Port 3306)]
+            ADMIN[phpMyAdmin<br/>Database GUI]
         end
         
-        subgraph Database Cluster
-            DBMASTER[(MySQL Primary)]
-            DBREPLICA[(MySQL Replica)]
+        subgraph Development Tools
+            COMPOSER[Composer<br/>Dependencies]
+            NPM[NPM<br/>Frontend Assets]
+            GIT[Git<br/>Version Control]
         end
         
-        subgraph Storage
-            BACKUP[Backup Storage]
-            LOGS[Log Storage]
+        subgraph Testing Tools
+            NGROK[ngrok<br/>Telegram Webhook]
+            TINKER[Laravel Tinker<br/>REPL]
         end
     end
     
-    LB --> APP1
-    LB --> APP2
-    LB --> WEB1
-    LB --> WEB2
+    BUILT -.->|Option 1| APP
+    LARA -.->|Option 2| APP
+    XAMPP -.->|Option 3| APP
+    VALET -.->|Option 4| APP
     
-    APP1 --> DBMASTER
-    APP2 --> DBMASTER
-    DBMASTER -.->|Replication| DBREPLICA
+    APP --> MYSQL
+    APP --> ENV
+    ARTISAN --> APP
     
-    APP1 -.->|Logs| LOGS
-    APP2 -.->|Logs| LOGS
-    DBMASTER -.->|Backup| BACKUP
+    COMPOSER --> APP
+    NPM --> APP
+    GIT --> APP
+    
+    NGROK -.->|Tunnel| APP
+    TINKER --> APP
+    ADMIN --> MYSQL
 ```
 
 ## 7. User Authentication Flow
